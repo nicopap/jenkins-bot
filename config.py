@@ -7,7 +7,7 @@ file format. It has the following sections:
 The webhooks paths to listen to, for the bottle server
     sonarPath: The path that sonar will request when activating a webhook
     githubPath: The path that github will request when activating a webhook
-    timeout: How long (in seconds) should the bot wait the sonar report
+    timeout/int: How long (in seconds) should the bot wait the sonar report
         until it assumes it simply wont ever answer.
 
 [jenkins]:
@@ -16,6 +16,7 @@ Jenkins ci related settings
     path: the path to use to trigger the build of the project
     site: the domain name of the jenkins instance
     project: The project that must be built
+    cibranch: the branch that jenkins uses to continuously integrate.
 
 [discord]:
 The discord related settings
@@ -25,42 +26,93 @@ The discord related settings
     masterId: The user with extra privileges.
     trigger: The message that triggers the Jenkins ci job.
 """
+import re
 import configparser
 from collections import namedtuple
 
-Hooks_conf = namedtuple('Hooks_conf', ['sonarPath', 'githubPath', 'timeout'])
-Jenkins_conf = namedtuple('Jenkins_conf', ['token', 'path', 'site', 'project'])
-Discord_conf = namedtuple('Discord_conf', ['token', 'activateId',
-                                           'reportId', 'masterId'])
+def get_typed_list(options):
+    """Returns a tuple of two lists, the option names and the option
+    types."""
+    options_names = [x.split('/')[0] for x in options]
+    options_types = []
+    for option in options:
+        try:
+            options_types += [option.split('/')[1]]
+        except IndexError:
+            options_types += ['']
+    return options_names, options_types
 
-config = configparser.ConfigParser()
-config.read('bot.config')
 
-hooks_conf = Hooks_conf(config['hooks']['sonarPath'],
-                        config['hooks']['githubPath'],
-                        int(config['hooks']['timeout']))
+def docstring_parser():
+    """Creates the configuaration specification based on the docstring.
 
-jenkins_conf = Jenkins_conf(config['jenkins']['token'],
-                            config['jenkins']['path'],
-                            config['jenkins']['site'],
-                            config['jenkins']['project'])
+    The docstring explains the content and documents the content of the
+    config file, so why not directly use it to dynamically create
+    the configs?
 
-discord_conf = Discord_conf(config['discord']['token'],
-                            config['discord']['activateId'],
-                            config['discord']['reportId'],
-                            config['discord']['masterId'])
+    The format is as following:
+        Sections are specified with a signle line the following way:
+
+        [<section_name>]:
+
+        where section_name is a valid python identifier the first character
+        must NOT be a uppercase letter.
+
+        Options are specified with EXACTLY FOUR LEADING SPACES, the option
+        name, and a colon. Every character after the colon is ignored.
+        An optional type specification is supported, string types are implicit,
+        explicitely declaring them will lead to an error.
+
+            <option_name>[/type]: ....
+
+        All lines that are formatted differently will be ignored, use those
+        to explain what the options do."""
+    docstring = __doc__
+    sections = {}
+    current_section = None
+    config = configparser.ConfigParser()
+    config.read('bot.config')
+    for line in docstring.split('\n'):
+        match = re.match(r'^\[(\w+)\]:$', line)
+        if match is not None:
+            current_section = match.group(1)
+            if current_section in sections:
+                raise configparser.DuplicateSectionError(current_section)
+            sections[current_section] = []
+            continue
+
+        match = re.match(r'^    (\w+/?\w*):.*$', line)
+        if match is not None:
+            current_option = match.group(1)
+            current_option_list = sections[current_section]
+            if current_option in current_option_list:
+                raise configparser.DuplicateOptionError(current_section,
+                                                        current_option)
+            current_option_list += [current_option]
+
+    for section, options in sections.items():
+        section_type_name = section.capitalize() + '_conf'
+        options_names, options_types = get_typed_list(options)
+        globals()[section_type_name] = \
+                namedtuple(section_type_name, options_names)
+        globals()[section + '_conf'] = globals()[section_type_name] \
+            ._make([getattr(config[section], 'get'+options_types[i])(x)
+                    for i, x in enumerate(options_names)])
+
+docstring_parser()
 
 print(f"""[INFO] here is the configuration:
 [hooks]:
     sonarPath: {hooks_conf.sonarPath}
     githubPath: {hooks_conf.githubPath}
-    timeout: {hooks_conf.timeout}
+    timeout: {hooks_conf.timeout * 10 // 10}
 
 [jenkins]:
     token: {jenkins_conf.token}
     path: {jenkins_conf.path}
     site: {jenkins_conf.site}
     project: {jenkins_conf.project}
+    cibranch: {jenkins_conf.cibranch}
 
 [discord]:
     token: {discord_conf.token}
