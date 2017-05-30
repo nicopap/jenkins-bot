@@ -3,8 +3,9 @@ from webhooklistener import subscribe_to, unsubscribe_from
 
 def react_to_github(json_data):
     """Launch the jenkins server ci process based on a git hook."""
-    print('Github hook was recieved')
-    print(json_data)
+    print('[INFO] Github hook was recieved')
+    pushed_branch = json_data['ref'].split('/')[-1]
+
 
 def listen_to_github(report_function):
     """Setups the structure to listen to github hooks."""
