@@ -6,7 +6,7 @@ from asyncio import Lock
 from config import jenkins_conf
 from reporter import collect_reports
 
-# Prevents requesting continuous integration when the tests are already running.
+# Prevents requesting continuous integration when the tests are already running
 jenkins_lock = Lock()
 
 # XXX Warning: the 'system' call uses a user-provided string, this typically.v.
