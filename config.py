@@ -17,7 +17,8 @@ The webhooks paths to listen to, for the bottle server
 [jenkins]:
 Jenkins ci related settings
     token: The token to use to authenticate for jenkins
-    path: the path to use to trigger the build of the project
+    tokenPath: the path to use to trigger the build of the project
+    path: The base URL for jenkins.
     project: The project that must be built
     cibranch: the branch that jenkins uses to continuously integrate.
 
@@ -116,6 +117,7 @@ print(f"""[INFO] here is the configuration:
 
 [jenkins]:
     token: {jenkins_conf.token}
+    tokenPath: {jenkins_conf.tokenPath}
     path: {jenkins_conf.path}
     project: {jenkins_conf.project}
     cibranch: {jenkins_conf.cibranch}

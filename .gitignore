@@ -1,3 +1,6 @@
 bot.config
 jenkins-bot
 __pycache__
+tags
+nohup.out
+
