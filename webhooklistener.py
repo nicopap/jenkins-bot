@@ -2,7 +2,6 @@
 import asyncio
 
 from aiohttp import web
-from yarl import URL
 
 SUBCRIPTION_BOOK = {}
 def subscribe_to(path, callback):
@@ -19,14 +18,13 @@ async def send_event(request):
     """Dispatches the request to URL to the subscribed callbacks."""
     print(f'[INFO] got a request for {request}')
     print(f'[INFO] BOOKKEEPING RECORDS: {SUBCRIPTION_BOOK}.')
-    for subcribed_path in SUBCRIPTION_BOOK.keys():
+    for subcribed_path in SUBCRIPTION_BOOK:
         if subcribed_path == request.url.path:
             print('[INFO] sending request to subscribed function')
             request_body = await request.json()
-            SUBCRIPTION_BOOK[subcribed_path](request_body)
+            await SUBCRIPTION_BOOK[subcribed_path](request_body)
             return web.Response(text="**Plays zelda puzzle solution tune**")
-    else:
-        return web.Response(text="T")
+    return web.Response(text="T")
 
 async def runserver(loop):
     """Starts the listening server for websocket calls."""

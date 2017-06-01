@@ -3,6 +3,10 @@
 The configuration file is bot.config, it follows the classical Windows INI
 file format. It has the following sections:
 
+[global]:
+Settings that apply to the whole application
+    site: The website hosting the ci structure
+
 [hooks]:
 The webhooks paths to listen to, for the bottle server
     sonarPath: The path that sonar will request when activating a webhook
@@ -14,9 +18,12 @@ The webhooks paths to listen to, for the bottle server
 Jenkins ci related settings
     token: The token to use to authenticate for jenkins
     path: the path to use to trigger the build of the project
-    site: the domain name of the jenkins instance
     project: The project that must be built
     cibranch: the branch that jenkins uses to continuously integrate.
+
+[sonar]:
+The sonar specific settings
+    prefix: the path prefix to the sonar instance.
 
 [discord]:
 The discord related settings
@@ -110,7 +117,6 @@ print(f"""[INFO] here is the configuration:
 [jenkins]:
     token: {jenkins_conf.token}
     path: {jenkins_conf.path}
-    site: {jenkins_conf.site}
     project: {jenkins_conf.project}
     cibranch: {jenkins_conf.cibranch}
 
@@ -119,4 +125,11 @@ print(f"""[INFO] here is the configuration:
     activateId: {discord_conf.activateId}
     reportId: {discord_conf.reportId}
     masterId: {discord_conf.masterId}
+    trigger: {discord_conf.trigger}
+
+[global]:
+    site: {global_conf.site}
+
+[sonar]:
+    prefix: {sonar_conf.prefix}
 """)
