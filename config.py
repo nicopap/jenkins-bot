@@ -40,7 +40,13 @@ from collections import namedtuple
 
 def get_typed_list(options):
     """Returns a tuple of two lists, the option names and the option
-    types."""
+    types.
+
+    options: a list of raw config section options, with its possible type
+        left in.
+
+    returns: two lists, one of the option names, one of the option types,
+        ordered according to the input list."""
     options_names = [x.split('/')[0] for x in options]
     options_types = []
     for option in options:

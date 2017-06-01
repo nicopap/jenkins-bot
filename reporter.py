@@ -7,7 +7,10 @@ from webhooklistener import subscribe_to, unsubscribe_from
 HAS_CALLED_MSG=1
 
 async def expect_hook(path, to_call):
-    """Subscribes to a request on the given path, with timeout."""
+    """Subscribes to a request on the given path, with timeout.
+
+    path: the url on which to listen for hooks.
+    to_call: the function to call when we recieved a sonar hook."""
     print('[INFO] in expect_hook')
     queue = asyncio.Queue()
     async def notify_call(json_content):
@@ -29,6 +32,8 @@ async def expect_hook(path, to_call):
 async def collect_reports(report_function):
     """Turns the bot in state of expecting hooks from the continuous
     integration structure and sends the content of the hooks to
-    report_function"""
+    report_function.
+
+    report_function: the function to call when we recieved a sonar hook."""
     print('[INFO] in collect_reports, setting up expectation hooks.')
     await expect_hook(hooks_conf.sonarPath, report_function)

@@ -15,7 +15,10 @@ jenkins_lock = asyncio.Lock()
 # formed strings!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 async def request_continuous_integration(report_function, client):
     """Sends a request to jenkins to start analysing the code.
-    Keeps a lock on the operation to prevent overloading the server."""
+    Keeps a lock on the operation to prevent overloading the server.
+
+    report_function: the function to call to publish in chat a sonar analysis
+    client: the discord client instance to use to send messages."""
     if jenkins_lock.locked(): # abort if the operation is running
         print('[INFO] the jenkins job was locked, I won\'t send a request.')
         return

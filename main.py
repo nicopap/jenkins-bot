@@ -28,7 +28,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    """When we command the bot to send ci job to Jenkins"""
+    """When we command the bot to send ci job to Jenkins."""
     if message.channel.id == discord_conf.activateId \
            and message.author.id == discord_conf.masterId \
            and message.content.startswith(discord_conf.trigger):
@@ -46,20 +46,21 @@ def last_channel_msg(channel_id):
 
 
 async def sonar_report(sonar_json):
+    """Writes into chat a summary of the sonar analysis.
+
+    sonar_json: the json dict object as the default webhook setup on sonar."""
     print('[INFO] in form_report in module main')
     projname = sonar_json['project']['name']
     projid = sonar_json['project']['key']
     status = sonar_json['status']
-    url = (global_conf.site + sonar_conf.prefix
-           + '/dashboard?id=' + quote(projid))
-    summary = (f'   **Analyse du code de {projname}**\n'
-               f'status: {status}\n'
-               f'url: {url}')
-    await client.send_message(client.get_channel(discord_conf.reportId),
-                              summary)
+    url = global_conf.site + sonar_conf.prefix +'/dashboard?id='+ quote(projid)
+    msg = f'   **Analyse du code de {projname}**\nstatus: {status}\n{url}'
+    await client.send_message(client.get_channel(discord_conf.reportId), msg)
     print(sonar_json)
 
+
 def main():
+    """Startup server and discord bot."""
     client.loop.create_task(runserver(client.loop))
     client.run(discord_conf.token)
 
