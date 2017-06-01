@@ -28,13 +28,15 @@ async def start(client):
     return queue
 
 
-async def abort(queue, client):
-    """Stop pretending to be busy testing stuff."""
+async def abort(queue, client, url):
+    """Stop pretending to be busy testing stuff.
+
+    queue: the queue to which """
     print('[INFO] Aborting job simulation!')
     await queue.put('Stop')
-    msg = ('Le job jenkins a dû être interromput pour une raison'
-           + ' inconnue. Réferrez-vous à la log de jenkins-bot pour de plus'
-           + ' ample informations.')
+    msg = ('**Le job jenkins a dû être interromput __SAD__**\n'
+           + 'Il est possible que ce soit dû à une erreure détectée par '
+           + f'Jenkins, veuillez vous référer à {url}')
     await client.send_message(client.get_channel(discord_conf.reportId), msg)
     await client.change_presence(
         game=discord.Game(name='à rien'),

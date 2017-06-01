@@ -16,12 +16,12 @@ jenkins_lock = asyncio.Lock()
 async def request_continuous_integration(report_function, client):
     """Sends a request to jenkins to start analysing the code.
     Keeps a lock on the operation to prevent overloading the server."""
-    print('[INFO] In request_continuous_integration.')
     if jenkins_lock.locked(): # abort if the operation is running
         print('[INFO] the jenkins job was locked, I won\'t send a request.')
         return
-    else:
-        await jenkins_lock.acquire()
+    print('[INFO] Aquire lock')
+    await jenkins_lock.acquire()
+    url = f'{global_conf.site}{jenkins_conf.path}/job/{jenkins_conf.project}/'
     try:
         queue = await emulatejob.start(client)
         exitval = system(f'curl \'{global_conf.site}'
@@ -37,9 +37,8 @@ async def request_continuous_integration(report_function, client):
     except:
         jenkins_lock.release()
         print('[WARNING] Some error occured, aborting continuous integration.')
-        await emulatejob.abort(queue, client)
+        await emulatejob.abort(queue, client, url)
         raise
     jenkins_lock.release()
-    url = f'{global_conf.site}{jenkins_conf.path}/job/{jenkins_conf.project}/'
     await emulatejob.stop(queue, client, url)
 
